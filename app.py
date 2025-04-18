@@ -2,6 +2,7 @@ import streamlit as st
 import transformers
 import torch
 import os
+st.write("Imported necessities:")
 
 os.environ["STREAMLIT_WATCHER_TYPE"] = "none"
 
@@ -16,14 +17,16 @@ def load_pipeline():
         device="cuda" if torch.cuda.is_available() else "cpu",
     )
     return pipeline
-
+st.write("Before loading pipeline")
 pipeline=load_pipeline()
-
+st.write("After loading pipeline")
 st.title("llama-3.1-8b version assistant")
 
 input_query=st.text_input("Please enter your query: ")
-
+st.write("taken text_input")
+st.write("Outside input indent")
 if input_query:
+    st.write("Inside input indent")
     messages=[
         {"role": "system", "content": "You are a helpful assistant, who answers any query I have as precisely and concisely as you can."},
         {"role": "user", "content": input_query},
@@ -34,7 +37,7 @@ if input_query:
         tokenize=False, 
         add_generation_prompt=True
     )
-
+    (
     terminators=[
         pipeline.tokenizer.eos_token_id,
         pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>")
