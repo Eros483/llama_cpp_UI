@@ -2,7 +2,6 @@ import streamlit as st
 import transformers
 import torch
 import os
-st.write("Imported necessities:")
 
 os.environ["STREAMLIT_WATCHER_TYPE"] = "none"
 
