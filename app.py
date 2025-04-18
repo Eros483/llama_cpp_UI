@@ -37,7 +37,7 @@ if input_query:
         tokenize=False, 
         add_generation_prompt=True
     )
-    (
+    
     terminators=[
         pipeline.tokenizer.eos_token_id,
         pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>")
