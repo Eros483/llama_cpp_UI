@@ -1,10 +1,13 @@
 import streamlit as st
 import transformers
 import torch
+import os
+
+os.environ["STREAMLIT_WATCHER_TYPE"] = "none"
 
 model_id="unsloth/Meta-Llama-3.1-8B-Instruct"
 
-@st.cache_resource
+@st.experimental_singleton
 def load_pipeline():
     pipeline=transformers.pipeline(
         "text-generation", 
@@ -36,16 +39,16 @@ if input_query:
         pipeline.tokenizer.eos_token_id,
         pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>")
     ]
-
-    outputs= pipeline(
-        prompt,
-        max_new_tokens=100,
-        eos_token_id=terminators,
-        do_sample=True,
-        temperature=0.8,
-        top_p=0.95,
-    )
-
-    assistant_reply=outputs[0]["generated_text"][len(prompt):]
-    st.write("Assistant reply: ")
-    st.write(assistant_reply)
+    with st.spinner("Generating response..."):
+        outputs= pipeline(
+            prompt,
+            max_new_tokens=100,
+            eos_token_id=terminators,
+            do_sample=True,
+            temperature=0.8,
+            top_p=0.95,
+        )
+    
+        assistant_reply=outputs[0]["generated_text"][len(prompt):]
+        st.write("Assistant reply: ")
+        st.write(assistant_reply)
