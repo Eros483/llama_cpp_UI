@@ -21,6 +21,8 @@ pipeline=load_pipeline()
 
 st.title("llama-3.1-8b version assistant")
 
+max_tokens=st.slider("Length of Output: ", min_value=10, max_value=1000, value=100, step=10)
+
 input_query=st.text_input("Please enter your query: ")
 if input_query:
     messages=[
@@ -40,10 +42,9 @@ if input_query:
     ]
     with st.spinner("Generating response..."):
         try:
-            st.write("entering pipeline")
             outputs= pipeline(
                 prompt,
-                max_new_tokens=100,
+                max_new_tokens=max_tokens,
                 eos_token_id=terminators,
                 do_sample=True,
                 temperature=0.8,
@@ -53,6 +54,7 @@ if input_query:
             assistant_reply=outputs[0]["generated_text"][len(prompt):]
             st.write("Assistant reply: ")
             st.write(assistant_reply)
+            st.write("In case of truncated responses, kindly increase output length (note: Marked increase in output time w.r.t increase in output length)
 
         except Exception as e:
             st.error(f"Generation failure: {str(e)}")
