@@ -54,7 +54,7 @@ if input_query:
             assistant_reply=outputs[0]["generated_text"][len(prompt):]
             st.write("Assistant reply: ")
             st.write(assistant_reply)
-            st.write("In case of truncated responses, kindly increase output length (note: Marked increase in output time w.r.t increase in output length")
+            st.warning("In case of truncated responses, kindly increase output length (note: Marked increase in output time w.r.t increase in output length")
 
         except Exception as e:
             st.error(f"Generation failure: {str(e)}")
