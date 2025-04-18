@@ -5,7 +5,7 @@ import os
 
 os.environ["STREAMLIT_WATCHER_TYPE"] = "none"
 
-model_id="unsloth/Meta-Llama-3.1-8B-Instruct"
+model_id="minpeter/Llama-3.2-1B-chatml-tool-v2"
 
 @st.cache_resource
 def load_pipeline():
