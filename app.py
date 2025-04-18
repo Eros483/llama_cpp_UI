@@ -1,35 +1,51 @@
-import llama_cpp
 import streamlit as st
-import os
-import requests
+import transformers
+import torch
 
-model_url="https://drive.google.com/file/d/10aA4NhXJtJBo7asI6-SAfVRMi9PNurSu/view?usp=sharing"
-model_path_gguf="llama-3.1-8b-instruct-q4_k_m.gguf"
+model_id="unsloth/Meta-Llama-3.1-8B-Instruct"
 
 @st.cache_resource
-def load_model():
-    if not os.path.exists(model_path_gguf):
-        st.info(f"Downloading model from {model_url}")
-        try:
-            response = requests.get(model_url, stream=True)
-            response.raise_for_status()
-            with open(model_path_gguf, "wb") as f:
-                for chunk in response.iter_content(chunk_size=8192):
-                    f.write(chunk)
-            st.success("Model downloaded succesfully")
-        except requests.exceptions.RequestException as e:
-            st.error(f"Error downloading model: {e}")
-            st.stop()
-    
-    model=llama_cpp.Llama(model_path=model_path_gguf, chat_format="llama-2")
+def load_pipeline():
+    pipeline=transformers.pipeline(
+        "text-generation", 
+        model=model_id,
+        model_kwargs={"torch_dtype": torch.bfloat16},
+        device="cuda" if torch.cuda.is_available() else "cpu",
+    )
+    return pipeline
 
-model = load_model()
+pipeline=load_pipeline()
 
-inputQuery=st.text_input("Please enter your query: ")
-temp=0.7
+st.title("llama-3.1-8b version assistant")
 
-if inputQuery:
-    response=model.create_chat_completion(messages=[{"role": "user", "content": inputQuery}], temperature=temp, max_tokens=256)
-    assistant_reply = response['choices'][0]['message']['content']
-    st.write("Assistant Reply: ")
+input_query=st.text_input("Please enter your query: ")
+
+if input_query:
+    messages=[
+        {"role": "system", "content": "You are a helpful assistant, who answers any query I have as precisely and concisely as you can."},
+        {"role": "user", "content": input_query},
+    ]
+
+    prompt=pipeline.tokenizer.apply_chat_template(
+        messages, 
+        tokenize=False, 
+        add_generation_prompt=True
+    )
+
+    terminators=[
+        pipeline.tokenizer.eos_token_id,
+        pipeline.tokenizer.convert_tokens_to_ids("<|eot_id|>")
+    ]
+
+    outputs= pipeline(
+        prompt,
+        max_new_tokens=100,
+        eos_token_id=terminators,
+        do_sample=True,
+        temperature=0.8,
+        top_p=0.95,
+    )
+
+    assistant_reply=outputs[0]["generated_text"][len(prompt):]
+    st.write("Assistant reply: ")
     st.write(assistant_reply)
